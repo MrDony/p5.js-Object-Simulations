@@ -1,0 +1,178 @@
+
+var g_height =500
+var g_length=500
+var g_damping=0.5
+var g_rad=10
+var g_thingCount=10;
+var g_randomness=0.1;
+var g_things=[];
+var g_forces=[];
+
+
+
+
+class Force
+{
+    dirx=0;
+    diry=0;
+    
+    constructor(dx,dy)
+    {
+      
+      {
+        this.dirx=dx;
+        this.diry=dy;
+      }
+      
+    }
+
+}
+class thing
+{
+    posx=0;
+    posy=0;
+    velx=0;
+    vely=0;
+    accx=0;
+    accy=0;
+    mass=0;
+
+    constructor(px,py,vx,vy,ax,ay,m)
+    {
+      //if(px&&py&&vx&&vy&&ax&&ay&&m)
+      {
+        this.posx=px;
+        this.posy=py;
+        this.velx=vx;
+        this.vely=vy;
+        this.accx=ax;
+        this.accy=ay;
+        this.mass=m;
+      }
+      
+    }
+    applyForce(f)
+    {
+        this.accx=f.dirx/this.mass;
+        this.accy=f.diry/this.mass;
+
+        this.velx+=this.accx;
+        this.vely+=this.accy;
+    }
+    update()
+    {
+        this.posx+=this.velx;
+        this.posy+=this.vely;
+        stroke(255);
+        fill(255,25,23);
+        ellipse(this.posx,this.posy,g_rad,g_rad);
+    }
+    edges()
+    {
+      if(this.posy>=(g_height-g_rad)/2)
+      {
+        this.posy=(g_height-g_rad)/2;
+        this.vely*=-1;
+        this.vely/=(1+g_damping);
+      }
+      if(this.posy<=(-g_height+g_rad)/2)
+      {
+        this.posy=(-g_height+g_rad)/2;
+        this.vely*=-1;
+        this.vely/=(1+g_damping);
+      }
+      if(this.posx>=(g_length-g_rad)/2)
+      {
+        this.posx=(g_length-g_rad)/2;
+        this.velx*=-1;
+        this.velx/=(1+g_damping);
+      }
+      if(this.posx<=(-g_length+g_rad)/2)
+      {
+        this.posx=(-g_length+g_rad)/2;
+        this.velx*=-1;
+        this.velx/=(1+g_damping);
+      }
+    }
+    collide()
+    {
+      for(i=0;i<g_thingCount;i++)
+      {
+        if((i+1)!=this.m)
+        {
+          if(dist( this.posx, this.posy, g_things[i].posx, g_things[i].posy) - g_rad < 5)
+          {
+            this.vely*=-1;
+            this.velx*=-1;
+            g_things[i].velx*=-1;
+            g_things[i].vely*=-1;
+          }
+        }
+        
+      }
+    }
+    
+}
+
+
+
+
+
+function setup()
+{
+  createCanvas(g_length,g_height);
+  for(i=0;i<g_thingCount;i++)
+  {
+    g_things[i]=new thing(random(-g_length/2,g_length/2),random(-g_height/2,g_height/2),random(-10,10),random(-10,10),0,0,i+1);
+  }
+  for(i=0;i<g_thingCount;i++)
+  {
+    g_forces[i]=new Force(random(-10,10),random(-10,10));
+  }
+  
+}
+
+function draw()
+{
+  background(0);
+  translate(250,250);
+  stroke(255);
+  fill(12);
+  showGrid();
+  
+  run();
+  
+  
+}
+
+function run()
+{
+  for(i=0;i<g_thingCount;i++)
+  {
+    g_things[i].edges();
+    g_things[i].applyForce(g_forces[i]);
+    g_things[i].update();
+    //g_things[i].collide();
+    if(random(0,1000000)<g_randomness*1000000)
+    {
+      g_forces[i].diry=random(-1,1);
+      g_forces[i].dirx=random(-1,1);
+    }
+  }
+  
+
+}
+
+function showGrid()
+{
+  var grid=50
+  for(i=-g_length/2;i<g_length;i+=grid)
+  {
+    line(-g_height/2,i,g_height,i)
+  }
+  for(i=-g_height/2;i<g_height;i+=grid)
+  {
+    line(i,-g_length/2,i,g_length/2)
+  }
+  
+}
